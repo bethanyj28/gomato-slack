@@ -3,9 +3,9 @@ An open source slack pomodoro timer written in Go. This project is currently in 
 
 ## Getting Started
 
-On slack, create a bot user. Under **Settings** -> **Basic Information**, scroll to **App Credentials** and copy the **Verification Token** (TODO: update authentication)
+On slack, create a bot user. Under **Settings** -> **Basic Information**, scroll to **App Credentials** and copy the **Verification Token**
 
-Clone the repo, then run `make env`, which will generate an `environment.env` file (which is ignored by GitHub). You will need to enter your verification token on this line:
+Clone the repo, then run `make env`, which will generate a file called `environment.env` (which is ignored by git). You will need to enter your verification token on this line:
 
 ```
 SLACK_VERIFICATION_TOKEN=<Your Slack verification token>
@@ -41,6 +41,6 @@ From here, you should be able to run those commands from your workspace! The com
 ```
 
 ## Upcoming Tasks
-- [] Respond to user via Slack when timer is up
-- [] Option to set do not disturb during timer
-- [] Set a timer for a break
+- [ ] Respond to user via Slack when timer is up
+- [ ] Option to set do not disturb during timer
+- [ ] Set a timer for a break
