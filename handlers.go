@@ -40,13 +40,10 @@ func (s *Server) startTimer(c *gin.Context) {
 		c.AbortWithStatus(http.StatusBadRequest)
 	}
 
-	t := timerDetail{
-		timeStart:    time.Now(),
-		timeDuration: d,
-		timer:        time.AfterFunc(d, s.setTimer(sc.UserID)),
+	if _, err := s.Gomato.Start(sc.UserID, d, s.setTimer(sc.UserID)); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error starting timer": err.Error()})
+		return
 	}
-
-	s.Cache.SetDefault(sc.UserID, &t)
 
 	c.Status(http.StatusOK)
 }
@@ -63,20 +60,10 @@ func (s *Server) pauseTimer(c *gin.Context) {
 		return
 	}
 
-	td, ok := s.Cache.Get(sc.UserID)
-	if !ok {
-		c.AbortWithStatus(http.StatusNoContent)
+	if err := s.Gomato.Pause(sc.UserID); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error pausing timer": err.Error()})
 		return
 	}
-
-	tData, ok := td.(*timerDetail)
-	if !ok {
-		c.AbortWithStatus(http.StatusBadRequest)
-		return
-	}
-
-	_ = tData.timer.Stop()
-	tData.timeDuration = tData.timeDuration - time.Since(tData.timeStart)
 
 	c.Status(http.StatusOK)
 }
@@ -93,19 +80,9 @@ func (s *Server) resumeTimer(c *gin.Context) {
 		return
 	}
 
-	td, ok := s.Cache.Get(sc.UserID)
-	if !ok {
-		c.AbortWithStatus(http.StatusNoContent)
-		return
+	if err := s.Gomato.Resume(sc.UserID); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error resuming timer": err.Error()})
 	}
-
-	tData, ok := td.(*timerDetail)
-	if !ok {
-		c.AbortWithStatus(http.StatusBadRequest)
-		return
-	}
-
-	_ = tData.timer.Reset(tData.timeDuration)
 
 	c.Status(http.StatusOK)
 }
@@ -122,28 +99,15 @@ func (s *Server) stopTimer(c *gin.Context) {
 		return
 	}
 
-	td, ok := s.Cache.Get(sc.UserID)
-	if !ok {
-		c.AbortWithStatus(http.StatusNoContent)
-		return
+	if err := s.Gomato.Stop(sc.UserID); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error stopping timer": err.Error()})
 	}
-
-	tData, ok := td.(*timerDetail)
-	if !ok {
-		c.AbortWithStatus(http.StatusBadRequest)
-		return
-	}
-
-	_ = tData.timer.Stop()
-
-	s.Cache.Delete(sc.UserID)
 
 	c.Status(http.StatusOK)
 }
 
 func (s *Server) notifyUser(userID string) {
 	fmt.Printf("Time's up!")
-	s.Cache.Delete(userID)
 }
 
 func (s *Server) setTimer(userID string) func() {
