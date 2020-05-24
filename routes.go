@@ -1,21 +1,21 @@
 package gomato
 
 import (
+	"github.com/bethanyj28/gomato"
 	"github.com/gin-gonic/gin"
-	gcache "github.com/patrickmn/go-cache"
 )
 
 // Server represents the necessary components to run the server
 type Server struct {
-	Cache  *gcache.Cache
+	Gomato gomato.PomodoroManager
 	Router *gin.Engine
 }
 
 // NewServer instantiates a Server object
 func NewServer() *Server {
-	cache := gcache.New(-1, -1) // cache with no expiration, no cleanup
+	gm := gomato.NewDefaultTimeKeeper()
 	router := gin.Default()
-	return &Server{Cache: cache, Router: router}
+	return &Server{Gomato: gm, Router: router}
 }
 
 // BuildRoutes builds the routes to listen to slash commands

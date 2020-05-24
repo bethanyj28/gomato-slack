@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"github.com/bethanyj28/gomato-slack"
+	gs "github.com/bethanyj28/gomato-slack"
 	"github.com/joho/godotenv"
 )
 
@@ -12,7 +12,7 @@ func main() {
 		log.Fatal("failed to load env")
 	}
 
-	server := gomato.NewServer()
+	server := gs.NewServer()
 
 	server.BuildRoutes()
 
