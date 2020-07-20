@@ -19,7 +19,7 @@ type timerDetail struct {
 func (s *Server) startTimer(c *gin.Context) {
 	sc, err := slack.SlashCommandParse(c.Request)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error parsing slash command": err.Error()})
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error parsing slash command": err.Error()})
 		return
 	}
 
@@ -38,20 +38,30 @@ func (s *Server) startTimer(c *gin.Context) {
 	d, err := time.ParseDuration(ud)
 	if err != nil {
 		c.AbortWithStatus(http.StatusBadRequest)
-	}
-
-	if _, err := s.Gomato.Start(sc.UserID, d, s.setTimer(sc.UserID)); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error starting timer": err.Error()})
 		return
 	}
 
-	c.Status(http.StatusOK)
+	if _, err := s.Gomato.Start(sc.UserID, d, s.setTimer(sc.UserID)); err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error starting timer": err.Error()})
+		return
+	}
+
+	interpolate := struct {
+		TimeDuration string
+	}{sc.Text}
+	resp, err := formatMessage(startTimerMsg, interpolate)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error generating message": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, resp)
 }
 
 func (s *Server) pauseTimer(c *gin.Context) {
 	sc, err := slack.SlashCommandParse(c.Request)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error parsing slash command": err.Error()})
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error parsing slash command": err.Error()})
 		return
 	}
 
@@ -61,11 +71,16 @@ func (s *Server) pauseTimer(c *gin.Context) {
 	}
 
 	if err := s.Gomato.Pause(sc.UserID); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error pausing timer": err.Error()})
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error pausing timer": err.Error()})
 		return
 	}
 
-	c.Status(http.StatusOK)
+	resp, err := formatMessage(pauseTimerMsg, nil)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error generating message": err.Error()})
+	}
+
+	c.JSON(http.StatusOK, resp)
 }
 
 func (s *Server) resumeTimer(c *gin.Context) {
@@ -84,7 +99,12 @@ func (s *Server) resumeTimer(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error resuming timer": err.Error()})
 	}
 
-	c.Status(http.StatusOK)
+	resp, err := formatMessage(resumeTimerMsg, nil)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error generating message": err.Error()})
+	}
+
+	c.JSON(http.StatusOK, resp)
 }
 
 func (s *Server) stopTimer(c *gin.Context) {
@@ -103,7 +123,12 @@ func (s *Server) stopTimer(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error stopping timer": err.Error()})
 	}
 
-	c.Status(http.StatusOK)
+	resp, err := formatMessage(stopTimerMsg, nil)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error generating message": err.Error()})
+	}
+
+	c.JSON(http.StatusOK, resp)
 }
 
 func (s *Server) notifyUser(userID string) {
