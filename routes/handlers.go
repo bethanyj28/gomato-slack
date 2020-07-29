@@ -1,4 +1,4 @@
-package gomato
+package routes
 
 import (
 	"fmt"
@@ -8,6 +8,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/nlopes/slack"
+
+	"github.com/bethanyj28/gomato-slack/internal/format"
 )
 
 type timerDetail struct {
@@ -49,7 +51,7 @@ func (s *Server) startTimer(c *gin.Context) {
 	interpolate := struct {
 		TimeDuration string
 	}{sc.Text}
-	resp, err := formatMessage(startTimerMsg, interpolate)
+	resp, err := format.Message("start", interpolate)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error generating message": err.Error()})
 		return
@@ -75,7 +77,7 @@ func (s *Server) pauseTimer(c *gin.Context) {
 		return
 	}
 
-	resp, err := formatMessage(pauseTimerMsg, nil)
+	resp, err := format.Message("pause", nil)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error generating message": err.Error()})
 	}
@@ -99,7 +101,7 @@ func (s *Server) resumeTimer(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error resuming timer": err.Error()})
 	}
 
-	resp, err := formatMessage(resumeTimerMsg, nil)
+	resp, err := format.Message("resume", nil)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error generating message": err.Error()})
 	}
@@ -123,7 +125,7 @@ func (s *Server) stopTimer(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error stopping timer": err.Error()})
 	}
 
-	resp, err := formatMessage(stopTimerMsg, nil)
+	resp, err := format.Message("stop", nil)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error generating message": err.Error()})
 	}
