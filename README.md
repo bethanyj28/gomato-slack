@@ -1,4 +1,4 @@
-# gomato
+# gomato-slack
 An open source slack pomodoro timer written in Go. This project is currently in development and is about halfway to a usable product. Please see [upcoming tasks](#upcoming-tasks)
 
 ## Getting Started
