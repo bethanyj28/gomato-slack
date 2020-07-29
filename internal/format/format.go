@@ -1,4 +1,4 @@
-package gomato
+package format
 
 import (
 	"bytes"
@@ -58,7 +58,21 @@ const (
 }`
 )
 
-func formatMessage(text string, data interface{}) (interface{}, error) {
+// Message formats a message based on the given scenario
+func Message(messageType string, data interface{}) (interface{}, error) {
+	var text string
+	switch messageType {
+	case "start":
+		text = startTimerMsg
+	case "pause":
+		text = pauseTimerMsg
+	case "resume":
+		text = resumeTimerMsg
+	case "stop":
+		text = stopTimerMsg
+	default:
+		return nil, errors.New("invalid message type")
+	}
 	var buf bytes.Buffer
 	tmpl, err := template.New("message").Parse(text)
 	if err != nil {

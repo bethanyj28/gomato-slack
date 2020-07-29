@@ -1,4 +1,4 @@
-package gomato
+package routes
 
 import (
 	"github.com/bethanyj28/gomato"
